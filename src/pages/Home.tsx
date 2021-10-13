@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, Alert } from 'react-native';
 
 import { Header } from '../components/Header';
 import { Task, TasksList } from '../components/TasksList';
@@ -12,19 +12,62 @@ export function Home() {
       console.log(tasks)
   }, [tasks]);
 
-  function handleAddTask(newTaskTitle: string) {
-    const id = new Date().getTime();
-    const title = newTaskTitle;
-    let done = false;
+  function createAlertFindTaskWithTitle() {
+    Alert.alert(
+      "Atenção!",
+      "This is content of alert",
+      [
+        {
+          text: "Cancel",
+          onPress: () => console.log("Cancel Pressed"),
+          style: "cancel"
+        }
+      ]
+    )
+  };
 
-    setTasks([...tasks, {id, done, title}])
+  function createAlertAreYouSure(id: number) {
+    Alert.alert(
+      "Atenção!",
+      "Você tem certeza que deseja a tarefa selecionada?",
+      [
+        {
+          text: "Sim",
+          onPress: () => setTasks(tasks.filter(tasks => tasks.id !== id)),
+          style: 'default'
+        },
+        {
+          text: "Não",
+          onPress: () => console.log("Não Pressed"),
+          style: "cancel"
+        }
+      ]
+    )
+  };
+
+  function handleAddTask(newTaskTitle: string) {
+    const test = tasks.find(tasks => tasks.title === newTaskTitle);
+
+    if(test === undefined){
+      const id = new Date().getTime()
+      const title = newTaskTitle;
+      let done = false;
+      setTasks([...tasks, {id, done, title}])
+    } else {
+      createAlertFindTaskWithTitle()
+    }
   }
 
-  function handleToggleTaskDone(id: number) {
-    setTasks(tasks.map(tasks => tasks.id === id ? {...tasks, done:true}: tasks))
+  
+
+  function handleToggleTaskDone(id: number, done: boolean) {
+    setTasks(tasks.map(tasks => tasks.id === id ? {...tasks, done: !done}: tasks))
   }
   function handleRemoveTask(id: number) {
-    setTasks(tasks.filter(tasks => tasks.id !== id));
+    createAlertAreYouSure(id);
+  }
+  function handleEditTask(taskId: number, tasksNewTitle: string){
+    setTasks(tasks.map(tasks => tasks.id === taskId ? {...tasks, title: tasksNewTitle}: tasks))
   }
 
   return (
@@ -37,6 +80,7 @@ export function Home() {
         tasks={tasks} 
         toggleTaskDone={handleToggleTaskDone}
         removeTask={handleRemoveTask} 
+        editTask={handleEditTask}
       />
     </View>
   )
